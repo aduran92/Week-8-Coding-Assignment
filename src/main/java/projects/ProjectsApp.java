@@ -12,20 +12,22 @@ import projects.service.ProjectService;
 public class ProjectsApp {
 		
 	
-	private static Scanner scanner = new Scanner (System.in);
-	private static ProjectService projectService = new ProjectService();
+	private Scanner scanner = new Scanner (System.in);
+	private ProjectService projectService = new ProjectService();
+	private Project curProject;
 	
 	// @formatter:off
-	private static List<String> operations = List.of("1) Add a project");
+	private List<String> operations = List.of(
+			"1) Add a project", 
+			"2) List projects", 
+			"3) Select a project");
 	// @formatter:on
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		new ProjectsApp().processUserSelections();
 	}
 
-	private static void processUserSelections() {
-		// TODO Auto-generated method stub
+	private void processUserSelections() {
 		boolean done = false;
 		
 		while (!done) {
@@ -41,6 +43,14 @@ public class ProjectsApp {
 					createProject();
 					break;
 					
+				case 2:
+					listProjects();
+					break;
+					
+				case 3:
+					selectProject();
+					break;
+					
 				default:
 					System.out.println("\n" + selection + " is not a valid selection. Try again.");
 					break;
@@ -53,7 +63,23 @@ public class ProjectsApp {
 		
 	}
 	
-	private static void createProject() {
+	private void selectProject() {
+		listProjects();
+		Integer projectId = getIntInput("Enter a project ID to select a project");
+		
+		curProject = null;
+		curProject = projectService.fetchProjectById(projectId);
+	}
+	
+	private void listProjects() {
+		List<Project> projects = projectService.fetchAllProjects();
+		
+		System.out.println("\nProjects:");
+		
+		projects.forEach(project -> System.out.println(" " + project.getProjectId() + ": " + project.getProjectName()));
+	}
+	
+	private void createProject() {
 		String projectName = getStringInput("Enter the project name");
 		BigDecimal estimatedHours = getDecimalInput("Enter the estimated hours");
 		BigDecimal actualHours = getDecimalInput("Enter the actual hours");
@@ -72,7 +98,7 @@ public class ProjectsApp {
 		System.out.println("You have successfully created project: " + dbProject);		
 	}
 	
-	private static BigDecimal getDecimalInput(String prompt) {
+	private BigDecimal getDecimalInput(String prompt) {
 		String input = getStringInput(prompt);
 		
 		if(Objects.isNull(input)) {
@@ -87,29 +113,19 @@ public class ProjectsApp {
 		}
 	}
 	
-	private static boolean exitMenu() {
+	private boolean exitMenu() {
 		System.out.println("Exiting the menu.");
 		return true;
 	}
 
-	private static int getUserSelection() {
-		// TODO Auto-generated method stub
+	private int getUserSelection() {
 		printOperations();
 		
 		Integer input = getIntInput("Enter a menu selection");
 		return Objects.isNull(input) ? -1 : input;	
 	}
 
-	private static void printOperations() {
-		// TODO Auto-generated method stub
-		System.out.println("\nThese are the available selections. Press the enter key to quit:");
-		
-		operations.forEach(line -> System.out.println(" " + line));
-			
-	}
-
-	private static Integer getIntInput(String prompt) {
-		// TODO Auto-generated method stub
+	private Integer getIntInput(String prompt) {
 		String input = getStringInput(prompt);
 		
 		if (Objects.isNull(input)) {
@@ -124,12 +140,24 @@ public class ProjectsApp {
 		}
 	}
 
-	private static String getStringInput(String prompt) {
-		// TODO Auto-generated method stub
+	private String getStringInput(String prompt) {
 		System.out.println(prompt + ": ");
 		String input = scanner.nextLine();
 		
 		return input.isBlank() ? null : input.trim();
+	}
+
+	private void printOperations() {
+		System.out.println("\nThese are the available selections. Press the enter key to quit:");
+	
+		operations.forEach(line -> System.out.println(" " + line));
+	
+		if (Objects.isNull(curProject)) {
+			System.out.println("\nYou are not working with a project.");
+			}
+			else {
+				System.out.println("\nYou are working with project: " + curProject);
+			}
 	}
 
 }
